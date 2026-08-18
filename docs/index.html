@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallamilaan — till tally</title>
+<meta name="description" content="Gallamilaan reconciles your cash till at day-end: opening + cash sales − expenses − payouts vs the counted cash. UPI/card kept separate so digital payment never fakes a shortage.">
+<style>
+  :root{--bg:#eff6f6;--card:#fff;--ink:#0f2222;--muted:#4e6969;--brand:#2f6e6e;--brand-ink:#194545;--line:#d5e6e6;--accent:#e2f0f0}
+  @media (prefers-color-scheme:dark){:root{--bg:#0c1414;--card:#141d1d;--ink:#e2efef;--muted:#8fabab;--brand:#4fa5a5;--brand-ink:#bce3e3;--line:#213030;--accent:#132020}}
+  *{box-sizing:border-box}html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+  header{padding:64px 0 24px;text-align:center}
+  .eyebrow{color:var(--brand);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:13px}
+  h1{font-size:44px;margin:.2em 0 .1em;letter-spacing:-.02em}
+  .tag{color:var(--muted);font-size:19px;max-width:640px;margin:8px auto 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:28px 0}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}h1{font-size:34px}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+  .card h2{margin:0 0 8px;font-size:20px}
+  label{display:block;font-size:13px;color:var(--muted);margin:8px 0 4px}
+  input{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:15px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .out{margin-top:16px;background:var(--accent);border-radius:12px;padding:16px}
+  .big{font-size:30px;font-weight:800}
+  .short{color:#c0392b}.over{color:#c47f17}.exact{color:#1f8a4c}
+  .rowline{display:flex;justify-content:space-between;padding:3px 0;font-size:14px;border-top:1px dashed var(--line);margin-top:6px}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:40px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Gallamilaan · गल्ला मिलान</div>
+    <h1>Does the till tally?</h1>
+    <p class="tag">Count the drawer at day-end and Gallamilaan tells you the gap — and because only
+      cash flows are reconciled, near-universal UPI never fakes a shortage.</p>
+  </header>
+  <div class="grid">
+    <div class="card">
+      <h2>Try it</h2>
+      <label>Opening cash ₹</label><input id="open" type="number" value="2000">
+      <div class="two"><div><label>Cash sales ₹</label><input id="cash" type="number" value="5000"></div>
+        <div><label>UPI/card ₹ (not reconciled)</label><input id="upi" type="number" value="9000"></div></div>
+      <div class="two"><div><label>Expenses ₹</label><input id="exp" type="number" value="300"></div>
+        <div><label>Payouts ₹</label><input id="pay" type="number" value="500"></div></div>
+      <label>Counted closing cash ₹</label><input id="cnt" type="number" value="6100">
+      <div class="out">
+        <div>Result</div><div class="big" id="st">–</div>
+        <div class="rowline"><span>Gap</span><b id="gap">–</b></div>
+        <div class="rowline"><span>Expected cash</span><b id="exp2">–</b></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Why UPI is kept out</h2>
+      <p style="color:var(--muted)">No billing app does a physical, cash-only till reconciliation.
+        If UPI sales were folded into the count, the drawer would show a fake shortage from day one.</p>
+      <p style="color:var(--muted)">Expected cash = opening + cash sales − expenses − payouts. The gap
+        against your count is your real shrinkage — give it a number.</p>
+      <p style="color:var(--muted);font-size:14px">Flutter → Go → PostgreSQL; the Go service keeps a running day-book.</p>
+    </div>
+  </div>
+  <footer>Gallamilaan · a local-first shopkeeper tool · offline, no account.</footer>
+</div>
+<script>
+  const $=id=>document.getElementById(id), inr=v=>'₹'+(isFinite(v)?v:0).toFixed(2);
+  function calc(){
+    const o=+$('open').value||0,c=+$('cash').value||0,e=+$('exp').value||0,p=+$('pay').value||0,cnt=+$('cnt').value||0;
+    const expected=o+c-e-p, gap=cnt-expected;
+    const st=gap<-1e-9?'short':(gap>1e-9?'over':'exact');
+    const el=$('st'); el.textContent=st.toUpperCase(); el.className='big '+st;
+    $('gap').textContent=inr(gap); $('exp2').textContent=inr(expected);
+  }
+  document.querySelectorAll('input').forEach(el=>el.addEventListener('input',calc)); calc();
+</script>
+</body>
+</html>
